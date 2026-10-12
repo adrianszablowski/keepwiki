@@ -27,16 +27,16 @@ function vaultWithPage(): { readonly configDir: string; readonly home: string } 
 }
 
 describe('finding citations in an answer', () => {
-	it('reads straight, Polish and typographic quotes followed by a source', () => {
+	it('reads straight, low-high and curly quotes followed by a source', () => {
 		const answer = [
 			'One "tells Google which URL is the main one" [source: seo/knowledge/canonical.md].',
-			'Two „mówi Google, który adres jest główny” [source: seo/knowledge/canonical.md].',
+			'Two „tells Google which URL is the main one” [source: seo/knowledge/canonical.md].',
 			'Three “tells Google which URL is the main one” [source:seo/knowledge/sub/page.md].',
 		].join('\n');
 
 		expect(findCitations(answer)).toEqual([
 			{ excerpt: 'tells Google which URL is the main one', vault: 'seo', page: 'canonical.md' },
-			{ excerpt: 'mówi Google, który adres jest główny', vault: 'seo', page: 'canonical.md' },
+			{ excerpt: 'tells Google which URL is the main one', vault: 'seo', page: 'canonical.md' },
 			{ excerpt: 'tells Google which URL is the main one', vault: 'seo', page: 'sub/page.md' },
 		]);
 	});

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { evalSmallRows } from './check.js';
 import { minimumExcerptLength } from './citations.js';
 import { evalHeader } from './vault.js';
 
@@ -25,5 +26,9 @@ describe('skills/eval/SKILL.md against the eval file format', () => {
 	it('quotes the eval table header and the none marker', () => {
 		expect(evalSkill).toContain(evalHeader);
 		expect(evalSkill).toContain('`none`');
+	});
+
+	it('quotes the row count below which an eval is too small', () => {
+		expect(evalSkill).toContain(`${evalSmallRows} rows`);
 	});
 });

@@ -1,6 +1,6 @@
 ---
 name: new
-description: Create a keepwiki vault, or adopt an existing folder of notes as one. Use when the user wants a new place to collect knowledge about a subject, a course, a client or a project, or says "new vault", "nowy vault", "załóż vault".
+description: Create a keepwiki vault, or adopt an existing folder of notes as one. Use when the user wants a new place to collect knowledge about a subject, a course, a client or a project, or says "new vault".
 ---
 
 # new: create a vault

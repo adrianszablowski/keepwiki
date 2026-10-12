@@ -3,6 +3,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { parseFrontmatter, renderFrontmatter, setFrontmatterField } from './frontmatter.js';
 import { commitAll, type CommitOutcome } from './git.js';
 import type { Registry, RegistryEntry } from './registry.js';
+import { sectionItems } from './sections.js';
 import { expandHome, indexSections, readRegistryFile } from './vault.js';
 import { videoId } from './youtube.js';
 
@@ -206,25 +207,13 @@ function adoptedNotes(vault: RegistryEntry): readonly InboxNote[] {
 		return [];
 	}
 
-	const lines = readFileSync(indexPath, 'utf8').split('\n');
-	const start = lines.indexOf(indexSections.unprocessed);
-
-	if (start === -1) {
-		return [];
-	}
-
-	return lines
-		.slice(start + 1)
-		.filter((line, index, rest) => !rest.slice(0, index + 1).some((seen) => seen.startsWith('## ')))
-		.filter((line) => line.startsWith('- '))
-		.map((line) => line.slice(2))
-		.map((file) => ({
-			path: join(vaultPath(vault), file),
-			vault: vault.name,
-			source: 'adopted',
-			title: file,
-			added: '',
-		}));
+	return sectionItems(readFileSync(indexPath, 'utf8'), indexSections.unprocessed).map((file) => ({
+		path: join(vaultPath(vault), file),
+		vault: vault.name,
+		source: 'adopted',
+		title: file,
+		added: '',
+	}));
 }
 
 function toInboxNote(note: StoredNote, vault: string | null): InboxNote {

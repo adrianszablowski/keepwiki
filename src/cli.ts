@@ -4,6 +4,7 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { fetchArticle } from './article.js';
+import { checkVault } from './check.js';
 import { verifyCitations } from './citations.js';
 import { fetchVideo, transcriptMissingOutcome, videoNoteBody } from './youtube.js';
 import { addToInbox, completeNote, listInbox, sourceKinds, type InboxOptions, type SourceKind } from './inbox.js';
@@ -31,6 +32,7 @@ Commands:
   inbox list                          print every unprocessed source as JSON
   inbox done   <path> [--vault <n>]   move a learned source to raw/ (--vault for a shared inbox note)
   verify-citations [--file <p>]       check every "excerpt" [source: vault/knowledge/page.md] in an answer (stdin or --file)
+  check --vault <n>                   report broken links, missing sources, orphans and stale entries as JSON
   --version                           print the version
 
 The registry lives in ~/.keepwiki/registry.md.
@@ -91,6 +93,10 @@ export async function run(argv: readonly string[], io: CommandLineIo, env: Envir
 
 		if (command === 'verify-citations') {
 			return verifyCitationsCommand(argv.slice(1), io, env);
+		}
+
+		if (command === 'check') {
+			return checkCommand(argv.slice(1), io, env);
 		}
 	} catch (error) {
 		io.error(`${(error as Error).message}\n`);
@@ -242,6 +248,16 @@ function inboxDone(args: readonly string[], io: CommandLineIo, env: Environment)
 	});
 
 	io.write(`${JSON.stringify(result, null, '\t')}\n`);
+
+	return 0;
+}
+
+function checkCommand(args: readonly string[], io: CommandLineIo, env: Environment): number {
+	const { values } = parseArgs({ args: [...args], options: { vault: { type: 'string' } }, strict: true });
+
+	requireFlags(values, ['vault']);
+
+	io.write(`${JSON.stringify(checkVault(values.vault ?? '', inboxOptions(env)), null, '\t')}\n`);
 
 	return 0;
 }

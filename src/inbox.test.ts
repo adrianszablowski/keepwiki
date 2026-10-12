@@ -76,14 +76,14 @@ describe('adding a source to an inbox', () => {
 		expect(existsSync(result.path)).toBe(true);
 	});
 
-	it('slugs a Polish title to ascii letters, digits and hyphens', () => {
+	it('slugs a title with diacritics to ascii letters, digits and hyphens', () => {
 		const box = withVault();
 		const result = addToInbox(
-			{ vault: 'seo', source: 'text', title: 'Zażółć gęślą jaźń: 3 kroki!', content: 'x' },
+			{ vault: 'seo', source: 'text', title: 'Łódź, crème brûlée & naïve façade: 3 steps!', content: 'x' },
 			box,
 		);
 
-		expect(result.path).toBe(join(box.vaultPath, 'inbox', `${today}-zazolc-gesla-jazn-3-kroki.md`));
+		expect(result.path).toBe(join(box.vaultPath, 'inbox', `${today}-lodz-creme-brulee-naive-facade-3-steps.md`));
 	});
 
 	it('suffixes the filename when a note with the same slug exists today', () => {

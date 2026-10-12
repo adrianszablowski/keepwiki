@@ -1,6 +1,6 @@
 ---
 name: ask
-description: Answer a question only from the pages of one or more keepwiki vaults, each claim with a verified citation, and say plainly what keepwiki does not know. Use when the user asks a question about something they keep in keepwiki, names a vault with @name or in:name, or says "ask", "zapytaj", "co mam w keepwiki o".
+description: Answer a question only from the pages of one or more keepwiki vaults, each claim with a verified citation, and say plainly what keepwiki does not know. Use when the user asks a question about something they keep in keepwiki, names a vault with @name or in:name, or says "ask".
 ---
 
 # ask: a grounded answer from the vaults
@@ -40,7 +40,7 @@ In the question's language. Each claim is followed by its citation:
 
 The fragment is copied from the page, markdown and all, long enough to be found once: a sentence,
 not a phrase, and one with no quotation marks inside it, because the first closing quote ends the
-excerpt. Straight `"…"`, Polish `„…”` and typographic `“…”` quotes all count. End with two short
+excerpt. Straight `"…"`, low-high `„…”` and curly `“…”` quotes all count. End with two short
 sections:
 
 - `Searched`: the vaults and the pages read

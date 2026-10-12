@@ -12,6 +12,29 @@ export function parseFrontmatter(text: string): ReadonlyMap<string, string> {
 	);
 }
 
+export function frontmatterList(text: string, key: string): readonly string[] {
+	const lines = (text.match(frontmatterPattern)?.[1] ?? '').split('\n');
+	const start = lines.findIndex((line) => line.startsWith(`${key}:`));
+
+	if (start === -1) {
+		return [];
+	}
+
+	const items: string[] = [];
+
+	for (const line of lines.slice(start + 1)) {
+		const item = line.match(/^\s+-\s+(.*)$/)?.[1];
+
+		if (item === undefined) {
+			break;
+		}
+
+		items.push(item.trim());
+	}
+
+	return items;
+}
+
 export function renderFrontmatter(fields: Frontmatter): string {
 	const lines = Object.entries(fields)
 		.filter((entry): entry is [string, string] => entry[1] !== undefined)

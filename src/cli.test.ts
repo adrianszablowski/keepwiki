@@ -377,3 +377,36 @@ describe('adding a YouTube video', () => {
 		expect(readFileSync(summary.path, 'utf8')).toContain('spoken words');
 	});
 });
+
+describe('the check command', () => {
+	it('prints the JSON report and exits 0 even with findings', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'keepwiki-cli-check-'));
+		const env = { HOME: root };
+		const home = join(root, 'home');
+
+		await run(
+			['vault', 'create', '--name', 'seo', '--description', 'SEO', '--language', 'en', '--home', home],
+			capture().io,
+			env,
+		);
+		writeFileSync(
+			join(home, 'vaults', 'seo', 'knowledge', 'a.md'),
+			'---\ntitle: A\nupdated: 2026-10-12\n---\n\n[[missing]]\n',
+		);
+
+		const captured = capture();
+		const exitCode = await run(['check', '--vault', 'seo'], captured.io, env);
+		const report = JSON.parse(captured.out.join('')) as { vault: string; findings: { code: string }[] };
+
+		expect(exitCode).toBe(0);
+		expect(report.vault).toBe('seo');
+		expect(report.findings.map((finding) => finding.code)).toContain('broken-link');
+	});
+
+	it('requires --vault', async () => {
+		const captured = capture();
+
+		expect(await run(['check'], captured.io, { HOME: mkdtempSync(join(tmpdir(), 'keepwiki-cli-check-')) })).toBe(1);
+		expect(captured.err.join('')).toContain('--vault');
+	});
+});

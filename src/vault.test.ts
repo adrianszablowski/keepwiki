@@ -11,7 +11,7 @@ function sandbox(): { readonly configDir: string; readonly home: string } {
 	return { configDir: join(root, 'config'), home: join(root, 'home') };
 }
 
-const megadev = { name: 'megadev', description: 'Kurs MegaDev', language: 'pl', boundary: 'tylko treści kursu' };
+const megadev = { name: 'megadev', description: 'MegaDev course', language: 'pl', boundary: 'course content only' };
 
 describe('creating a vault', () => {
 	it('creates the registry, the home and the vault folders on first use', () => {
@@ -36,7 +36,7 @@ describe('creating a vault', () => {
 		expect(claudeMd).toContain(`keepwiki_schema: ${schemaVersion}`);
 		expect(claudeMd).toContain('name: megadev');
 		expect(claudeMd).toContain('language: pl');
-		expect(claudeMd).toContain('boundary: tylko treści kursu');
+		expect(claudeMd).toContain('boundary: course content only');
 	});
 
 	it('stores the path with ~ in the registry when the vault sits under the home directory of the user', () => {

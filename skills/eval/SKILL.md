@@ -1,6 +1,6 @@
 ---
 name: eval
-description: Run the questions in a vault's eval.md through the ask procedure and report three numbers: vault routing, page hits and "not in keepwiki" correctness. Use when the user says "eval", "sprawdź jakość odpowiedzi", or after a change to how ask or learn works.
+description: Run the questions in a vault's eval.md through the ask procedure and report three numbers: vault routing, page hits and "not in keepwiki" correctness. Use when the user says "eval", or after a change to how ask or learn works.
 ---
 
 # eval: does ask find the right pages and refuse the right questions

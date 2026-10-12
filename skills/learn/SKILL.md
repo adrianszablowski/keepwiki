@@ -1,6 +1,6 @@
 ---
 name: learn
-description: Turn unprocessed sources from the inboxes into wiki pages, every page a source touches, shown for approval first, linked both ways, indexed, with the original moved to raw. Use when the user says "learn", "przetwórz", "process the inbox", or right after add.
+description: Turn unprocessed sources from the inboxes into wiki pages, every page a source touches, shown for approval first, linked both ways, indexed, with the original moved to raw. Use when the user says "learn", "process the inbox", or right after add.
 ---
 
 # learn: inbox into pages
