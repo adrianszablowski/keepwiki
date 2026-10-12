@@ -29,17 +29,16 @@ then use that vault and say so. A name missing from the registry: show the names
 | a link to a page        | `article`  | the CLI fetches `--url` and takes the page title. A non-zero exit (403, paywall, offline): get the text yourself (WebFetch, or ask the user to paste it) and pass it with `--file -` plus `--title`, keeping `--url` |
 | a `.md` or `.txt` path  | `file`     | `--file <path>`                                                                                                                                                                                       |
 | a PDF                   | `pdf`      | Claude Code reads the PDF natively, then stdin. In Codex: `pdftotext <file> - \| npx -y keepwiki inbox add …`; with neither, ask the user to paste the text                                           |
+| a YouTube link          | `youtube`  | the CLI takes title, description and captions through `yt-dlp` when it is installed. Exit 1 with `"outcome": "needs-transcript"` means no `yt-dlp` or no captions: the JSON carries the title and description; ask the user to paste the transcript (the "Show transcript" panel under the video) and run again with `--file -` and `--title`. No transcript to paste: add the description alone the same way |
 
-A YouTube link is not an input yet: say so and offer to take a pasted transcript as `text`.
-
-`--title` is required for every kind but a fetched article: a short title in the user's words, or the
+`--title` is required for every kind but a fetched article or video: a short title in the user's words, or the
 source's first heading. `--url` goes with everything that has one, because the inbox deduplicates by
 URL.
 
 ## 3. Run
 
 ```bash
-npx -y keepwiki inbox add --vault <name> --source <text|article|file|pdf> --title "<title>" [--url <url>] [--file <path>] <<'KEEPWIKI'
+npx -y keepwiki inbox add --vault <name> --source <text|article|file|pdf|youtube> --title "<title>" [--url <url>] [--file <path>] <<'KEEPWIKI'
 <the text, when it comes from stdin>
 KEEPWIKI
 ```

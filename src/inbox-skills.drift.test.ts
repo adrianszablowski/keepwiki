@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { inboxFields, inboxStatuses, sourceKinds } from './inbox.js';
 import { indexSections } from './vault.js';
+import { transcriptMissingOutcome } from './youtube.js';
 
 const add = readFileSync(new URL('../skills/add/SKILL.md', import.meta.url), 'utf8');
 const learn = readFileSync(new URL('../skills/learn/SKILL.md', import.meta.url), 'utf8');
@@ -13,6 +14,10 @@ describe('skills/add/SKILL.md against the inbox code', () => {
 
 	it('shows every frontmatter field of an inbox note in its manual fallback', () => {
 		for (const field of inboxFields) expect(add).toMatch(new RegExp(`^\\s*${field}: `, 'm'));
+	});
+
+	it('names the outcome the CLI prints when a video has no transcript', () => {
+		expect(add).toContain(transcriptMissingOutcome);
 	});
 
 	it('calls the inbox add command', () => {

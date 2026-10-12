@@ -4,8 +4,9 @@ import { parseFrontmatter, renderFrontmatter, setFrontmatterField } from './fron
 import { commitAll, type CommitOutcome } from './git.js';
 import type { Registry, RegistryEntry } from './registry.js';
 import { expandHome, indexSections, readRegistryFile } from './vault.js';
+import { videoId } from './youtube.js';
 
-export const sourceKinds = ['text', 'article', 'file', 'pdf'] as const;
+export const sourceKinds = ['text', 'article', 'file', 'pdf', 'youtube'] as const;
 
 export const inboxStatuses = ['unprocessed', 'processed'] as const;
 
@@ -296,6 +297,12 @@ function slug(title: string): string {
 }
 
 function normaliseUrl(url: string): string {
+	const video = videoId(url);
+
+	if (video !== undefined) {
+		return `youtube.com/watch?v=${video}`;
+	}
+
 	try {
 		const parsed = new URL(url.trim());
 		const params = [...parsed.searchParams.entries()]

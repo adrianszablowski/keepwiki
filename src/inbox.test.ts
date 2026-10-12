@@ -243,3 +243,25 @@ describe('completing a source after learn', () => {
 		expect(() => completeNote(page, box)).toThrow(/not an unprocessed source/);
 	});
 });
+
+describe('deduplicating YouTube links', () => {
+	it('treats youtu.be, watch and shorts urls of one video as the same source', () => {
+		const box = withVault();
+		const first = addToInbox(
+			{ vault: 'seo', source: 'youtube', title: 'Talk', url: 'https://youtu.be/dQw4w9WgXcQ?si=abc', content: 'notes' },
+			box,
+		);
+		const second = addToInbox(
+			{
+				vault: 'seo',
+				source: 'text',
+				title: 'Talk transcript',
+				url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10s',
+				content: 'transcript',
+			},
+			box,
+		);
+
+		expect(second).toEqual({ path: first.path, vault: 'seo', outcome: 'appended' });
+	});
+});

@@ -1,3 +1,5 @@
+import { decodeEntities } from './html.js';
+
 export interface Article {
 	readonly title: string;
 	readonly text: string;
@@ -47,13 +49,6 @@ function innerText(html: string): string {
 		.trim();
 }
 
-function decodeEntities(text: string): string {
-	return text
-		.replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
-		.replace(/&#x([0-9a-f]+);/gi, (_, code: string) => String.fromCodePoint(Number.parseInt(code, 16)))
-		.replace(/&(amp|lt|gt|quot|apos|nbsp);/g, (_, name: string) => namedEntities[name] ?? '');
-}
-
 const fetchTimeoutMs = 20_000;
 const commentPattern = /<!--[\s\S]*?-->/g;
 const noisePattern = /<(script|style|noscript|nav|footer|aside|svg|form)\b[\s\S]*?<\/\1>/gi;
@@ -62,11 +57,3 @@ const headingPattern = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i;
 const articlePattern = /<article\b[^>]*>([\s\S]*?)<\/article>/i;
 const mainPattern = /<main\b[^>]*>([\s\S]*?)<\/main>/i;
 const bodyPattern = /<body\b[^>]*>([\s\S]*?)<\/body>/i;
-const namedEntities: Readonly<Record<string, string>> = {
-	amp: '&',
-	lt: '<',
-	gt: '>',
-	quot: '"',
-	apos: "'",
-	nbsp: ' ',
-};

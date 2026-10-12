@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { fetchArticle } from './article.js';
 import { verifyCitations } from './citations.js';
+import { fetchVideo, transcriptMissingOutcome, videoNoteBody } from './youtube.js';
 import { addToInbox, completeNote, listInbox, sourceKinds, type InboxOptions, type SourceKind } from './inbox.js';
 import { renderRegistry } from './registry.js';
 import { adoptVault, createVault, expandHome, readRegistryFile, type VaultOptions, type VaultSpec } from './vault.js';
@@ -151,14 +152,21 @@ function vaultCommand(
 async function inboxAdd(args: readonly string[], io: CommandLineIo, env: Environment): Promise<number> {
 	const { values } = parseArgs({ args: [...args], options: inboxFlags, strict: true });
 	const source = sourceKindNamed(values.source);
-	const fetched = source === 'article' && values.file === undefined ? await fetchArticle(requireUrl(values.url)) : null;
+	const fetched = values.file === undefined ? await fetchedSource(source, values.url, values.vault, env) : undefined;
+
+	if (fetched !== undefined && fetched.content === undefined) {
+		io.write(`${JSON.stringify({ outcome: transcriptMissingOutcome, ...fetched.meta }, null, '\t')}\n`);
+
+		return 1;
+	}
+
 	const title = values.title ?? fetched?.title;
 
 	if (title === undefined) {
 		throw new Error(`Missing --title.\n\n${usage}`);
 	}
 
-	const content = fetched?.text ?? readContent(values.file, io);
+	const content = fetched?.content ?? readContent(values.file, io);
 	const result = addToInbox(
 		{
 			source,
@@ -173,6 +181,40 @@ async function inboxAdd(args: readonly string[], io: CommandLineIo, env: Environ
 	io.write(`${JSON.stringify(result, null, '\t')}\n`);
 
 	return 0;
+}
+
+interface FetchedSource {
+	readonly title: string;
+	readonly content: string | undefined;
+	readonly meta: Readonly<Record<string, string>>;
+}
+
+async function fetchedSource(
+	source: SourceKind,
+	url: string | undefined,
+	vault: string | undefined,
+	env: Environment,
+): Promise<FetchedSource | undefined> {
+	if (source === 'article') {
+		const article = await fetchArticle(requireUrl(url, source));
+
+		return { title: article.title, content: article.text, meta: {} };
+	}
+
+	if (source === 'youtube') {
+		const video = await fetchVideo(requireUrl(url, source), vaultLanguage(vault, env));
+		const { title, author, description } = video;
+
+		return { title, content: videoNoteBody(video), meta: { title, author, description } };
+	}
+
+	return undefined;
+}
+
+function vaultLanguage(vault: string | undefined, env: Environment): string {
+	const { vaults } = readRegistryFile(configDir(env), defaultHome(env));
+
+	return vaults.find((entry) => entry.name === vault)?.language ?? 'en';
 }
 
 function inboxList(io: CommandLineIo, env: Environment): number {
@@ -231,9 +273,9 @@ function sourceKindNamed(value: string | undefined): SourceKind {
 	return kind;
 }
 
-function requireUrl(url: string | undefined): string {
+function requireUrl(url: string | undefined, source: SourceKind): string {
 	if (url === undefined) {
-		throw new Error(`An article is fetched from --url; give it, or pass the text with --file.\n\n${usage}`);
+		throw new Error(`A ${source} is fetched from --url; give it, or pass the text with --file.\n\n${usage}`);
 	}
 
 	return url;

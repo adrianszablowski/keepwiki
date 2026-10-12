@@ -339,3 +339,41 @@ describe('the citation gate command', () => {
 		expect(await run(['verify-citations', '--file', file], captured.io, env)).toBe(0);
 	});
 });
+
+describe('adding a YouTube video', () => {
+	it('writes the pasted transcript as a youtube note when --file - is given', async () => {
+		const root = mkdtempSync(join(tmpdir(), 'keepwiki-cli-yt-'));
+		const env = { HOME: root };
+
+		await run(
+			['vault', 'create', '--name', 'seo', '--description', 'SEO', '--language', 'en', '--home', join(root, 'home')],
+			capture().io,
+			env,
+		);
+
+		const captured = capture('spoken words\n');
+		const exitCode = await run(
+			[
+				'inbox',
+				'add',
+				'--vault',
+				'seo',
+				'--source',
+				'youtube',
+				'--url',
+				'https://youtu.be/dQw4w9WgXcQ',
+				'--title',
+				'Talk',
+				'--file',
+				'-',
+			],
+			captured.io,
+			env,
+		);
+		const summary = JSON.parse(captured.out.join('')) as { path: string };
+
+		expect(exitCode).toBe(0);
+		expect(readFileSync(summary.path, 'utf8')).toContain('source: youtube');
+		expect(readFileSync(summary.path, 'utf8')).toContain('spoken words');
+	});
+});
