@@ -12,34 +12,34 @@ interface CapturedOutput {
 	readonly err: string[];
 }
 
-function capture(): CapturedOutput & { readonly io: Parameters<typeof run>[1] } {
+function capture(stdin = ''): CapturedOutput & { readonly io: Parameters<typeof run>[1] } {
 	const out: string[] = [];
 	const err: string[] = [];
 
-	return { out, err, io: { write: (text) => out.push(text), error: (text) => err.push(text) } };
+	return { out, err, io: { write: (text) => out.push(text), error: (text) => err.push(text), read: () => stdin } };
 }
 
 describe('the keepwiki command line', () => {
-	it('prints the package version for --version', () => {
+	it('prints the package version for --version', async () => {
 		const captured = capture();
-		const exitCode = run(['--version'], captured.io);
+		const exitCode = await run(['--version'], captured.io);
 
 		expect(exitCode).toBe(0);
 		expect(captured.out.join('')).toBe(`${version}\n`);
 	});
 
-	it('prints usage and fails on a command it does not know', () => {
+	it('prints usage and fails on a command it does not know', async () => {
 		const captured = capture();
-		const exitCode = run(['frobnicate'], captured.io);
+		const exitCode = await run(['frobnicate'], captured.io);
 
 		expect(exitCode).toBe(1);
 		expect(captured.err.join('')).toContain('frobnicate');
 		expect(captured.err.join('')).toContain('Usage');
 	});
 
-	it('prints usage and succeeds when called with no arguments', () => {
+	it('prints usage and succeeds when called with no arguments', async () => {
 		const captured = capture();
-		const exitCode = run([], captured.io);
+		const exitCode = await run([], captured.io);
 
 		expect(exitCode).toBe(0);
 		expect(captured.out.join('')).toContain('Usage');
@@ -53,18 +53,18 @@ describe('the vault and registry commands', () => {
 		return { env: { HOME: root }, home: join(root, 'home') };
 	}
 
-	it('says there are no vaults before the first one is created', () => {
+	it('says there are no vaults before the first one is created', async () => {
 		const { env } = sandbox();
 		const captured = capture();
 
-		expect(run(['registry', 'list'], captured.io, env)).toBe(0);
+		expect(await run(['registry', 'list'], captured.io, env)).toBe(0);
 		expect(captured.out.join('')).toContain('No vaults yet');
 	});
 
-	it('creates a vault and prints a JSON summary the skill can read', () => {
+	it('creates a vault and prints a JSON summary the skill can read', async () => {
 		const { env, home } = sandbox();
 		const captured = capture();
-		const exitCode = run(
+		const exitCode = await run(
 			['vault', 'create', '--name', 'megadev', '--description', 'Kurs MegaDev', '--language', 'pl', '--home', home],
 			captured.io,
 			env,
@@ -77,21 +77,21 @@ describe('the vault and registry commands', () => {
 		expect(existsSync(join(summary.path, 'knowledge'))).toBe(true);
 	});
 
-	it('lists the registry file after a vault exists', () => {
+	it('lists the registry file after a vault exists', async () => {
 		const { env, home } = sandbox();
 		const captured = capture();
 
-		run(
+		await run(
 			['vault', 'create', '--name', 'seo', '--description', 'SEO notes', '--language', 'en', '--home', home],
 			captured.io,
 			env,
 		);
-		run(['registry', 'list'], captured.io, env);
+		await run(['registry', 'list'], captured.io, env);
 
 		expect(captured.out.join('')).toContain('| seo | ');
 	});
 
-	it('adopts an existing folder and lists its notes as unprocessed', () => {
+	it('adopts an existing folder and lists its notes as unprocessed', async () => {
 		const { env, home } = sandbox();
 		const existing = join(home, 'old-notes');
 		const captured = capture();
@@ -99,7 +99,7 @@ describe('the vault and registry commands', () => {
 		mkdirSync(existing, { recursive: true });
 		writeFileSync(join(existing, 'a.md'), '# a\n');
 
-		const exitCode = run(
+		const exitCode = await run(
 			[
 				'vault',
 				'adopt',
@@ -123,28 +123,28 @@ describe('the vault and registry commands', () => {
 		expect(summary.unprocessed).toEqual(['a.md']);
 	});
 
-	it('fails with the missing flag named when a required flag is absent', () => {
+	it('fails with the missing flag named when a required flag is absent', async () => {
 		const { env } = sandbox();
 		const captured = capture();
 
-		expect(run(['vault', 'create', '--name', 'x'], captured.io, env)).toBe(1);
+		expect(await run(['vault', 'create', '--name', 'x'], captured.io, env)).toBe(1);
 		expect(captured.err.join('')).toContain('--description');
 	});
 
-	it('fails with the reason when the vault name is taken', () => {
+	it('fails with the reason when the vault name is taken', async () => {
 		const { env, home } = sandbox();
 		const captured = capture();
 		const args = ['vault', 'create', '--name', 'dup', '--description', 'd', '--language', 'en', '--home', home];
 
-		run(args, captured.io, env);
+		await run(args, captured.io, env);
 
-		expect(run(args, captured.io, env)).toBe(1);
+		expect(await run(args, captured.io, env)).toBe(1);
 		expect(captured.err.join('')).toContain('dup');
 	});
 });
 
 describe('paths given to the CLI', () => {
-	it('stores a relative --path and --home as absolute paths', () => {
+	it('stores a relative --path and --home as absolute paths', async () => {
 		const root = realpathSync(mkdtempSync(join(tmpdir(), 'keepwiki-cli-rel-')));
 		const env = { HOME: root };
 		const captured = capture();
@@ -153,7 +153,7 @@ describe('paths given to the CLI', () => {
 		process.chdir(root);
 
 		try {
-			run(
+			await run(
 				[
 					'vault',
 					'create',
@@ -179,5 +179,105 @@ describe('paths given to the CLI', () => {
 
 		expect(summary.path).toBe(join(root, 'rel-vault'));
 		expect(readFileSync(join(root, '.keepwiki', 'registry.md'), 'utf8')).toContain(`home: ${join(root, 'home')}`);
+	});
+});
+
+describe('the inbox commands', () => {
+	async function vaultSandbox(): Promise<{ readonly env: Readonly<Record<string, string>>; readonly home: string }> {
+		const root = mkdtempSync(join(tmpdir(), 'keepwiki-cli-inbox-'));
+		const env = { HOME: root };
+		const home = join(root, 'home');
+
+		await run(
+			['vault', 'create', '--name', 'seo', '--description', 'SEO notes', '--language', 'en', '--home', home],
+			capture().io,
+			env,
+		);
+
+		return { env, home };
+	}
+
+	it('adds pasted text from stdin to a vault inbox and prints the note path', async () => {
+		const { env, home } = await vaultSandbox();
+		const captured = capture('Pasted body\n');
+		const exitCode = await run(
+			['inbox', 'add', '--vault', 'seo', '--source', 'text', '--title', 'Pasted'],
+			captured.io,
+			env,
+		);
+		const summary = JSON.parse(captured.out.join('')) as { path: string; vault: string; outcome: string };
+
+		expect(exitCode).toBe(0);
+		expect(summary.vault).toBe('seo');
+		expect(summary.outcome).toBe('created');
+		expect(summary.path.startsWith(join(home, 'vaults', 'seo', 'inbox'))).toBe(true);
+		expect(readFileSync(summary.path, 'utf8')).toContain('Pasted body');
+	});
+
+	it('adds a file by path to the shared inbox when no vault is given', async () => {
+		const { env, home } = await vaultSandbox();
+		const file = join(home, 'notes.txt');
+		const captured = capture();
+
+		writeFileSync(file, 'From a file\n');
+
+		const exitCode = await run(
+			['inbox', 'add', '--source', 'file', '--title', 'Notes', '--file', file],
+			captured.io,
+			env,
+		);
+		const summary = JSON.parse(captured.out.join('')) as { path: string; vault: string | null };
+
+		expect(exitCode).toBe(0);
+		expect(summary.vault).toBeNull();
+		expect(summary.path.startsWith(join(home, 'inbox'))).toBe(true);
+		expect(readFileSync(summary.path, 'utf8')).toContain('From a file');
+	});
+
+	it('refuses a source kind it does not know', async () => {
+		const { env } = await vaultSandbox();
+		const captured = capture('x');
+
+		expect(await run(['inbox', 'add', '--source', 'carrier-pigeon', '--title', 'T'], captured.io, env)).toBe(1);
+		expect(captured.err.join('')).toContain('text, article, file, pdf');
+	});
+
+	it('requires a title unless the article is fetched', async () => {
+		const { env } = await vaultSandbox();
+		const captured = capture('x');
+
+		expect(await run(['inbox', 'add', '--source', 'text'], captured.io, env)).toBe(1);
+		expect(captured.err.join('')).toContain('--title');
+	});
+
+	it('lists unprocessed notes as JSON and completes one into raw', async () => {
+		const { env, home } = await vaultSandbox();
+		const added = capture('Body\n');
+
+		await run(['inbox', 'add', '--vault', 'seo', '--source', 'text', '--title', 'Body'], added.io, env);
+
+		const listed = capture();
+
+		await run(['inbox', 'list'], listed.io, env);
+
+		const notes = JSON.parse(listed.out.join('')) as { path: string; title: string }[];
+
+		expect(notes.map((note) => note.title)).toEqual(['Body']);
+
+		const done = capture();
+		const exitCode = await run(['inbox', 'done', notes[0]?.path ?? ''], done.io, env);
+		const summary = JSON.parse(done.out.join('')) as { path: string; git: string };
+
+		expect(exitCode).toBe(0);
+		expect(summary.path.startsWith(join(home, 'vaults', 'seo', 'raw'))).toBe(true);
+		expect(existsSync(notes[0]?.path ?? '')).toBe(false);
+	});
+
+	it('prints an empty list when nothing is unprocessed', async () => {
+		const { env } = await vaultSandbox();
+		const captured = capture();
+
+		expect(await run(['inbox', 'list'], captured.io, env)).toBe(0);
+		expect(JSON.parse(captured.out.join(''))).toEqual([]);
 	});
 });

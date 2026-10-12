@@ -1,3 +1,5 @@
+import { parseFrontmatter } from './frontmatter.js';
+
 export interface RegistryEntry {
 	readonly name: string;
 	readonly path: string;
@@ -23,14 +25,7 @@ export function emptyRegistry(home: string): Registry {
 }
 
 export function parseRegistry(text: string): Registry {
-	const frontmatter = text.match(/^---\n([\s\S]*?)\n---/);
-	const fields = new Map(
-		(frontmatter?.[1] ?? '').split('\n').map((line) => {
-			const [key, ...rest] = line.split(':');
-
-			return [key?.trim() ?? '', rest.join(':').trim()];
-		}),
-	);
+	const fields = parseFrontmatter(text);
 	const home = fields.get('home') ?? '~/keepwiki';
 	const inbox = fields.get('inbox') ?? `${home}/inbox`;
 	const vaults = text

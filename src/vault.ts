@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
+import { commitAll, hasGit } from './git.js';
 import { addVault, emptyRegistry, parseRegistry, renderRegistry, type Registry } from './registry.js';
 
 export interface VaultSpec {
@@ -31,6 +32,12 @@ export const schemaVersion = 1;
 export const vaultFolders = ['inbox', 'raw', 'knowledge'] as const;
 
 export const vaultFiles = ['CLAUDE.md', 'index.md', 'eval.md'] as const;
+
+export const indexSections = {
+	pages: '## Pages',
+	pending: '## Pending updates',
+	unprocessed: '## Unprocessed notes',
+} as const;
 
 export function createVault(spec: VaultSpec, options: VaultOptions): VaultResult {
 	const path = spec.path ?? join(options.home, 'vaults', spec.name);
@@ -75,19 +82,15 @@ export function adoptVault(spec: VaultSpec & { readonly path: string }, options:
 	return { name: spec.name, path: spec.path, git: initialiseGit(spec.path), unprocessed };
 }
 
-export function readRegistryFile(configDir: string): Registry {
+export function readRegistryFile(configDir: string, fallbackHome: string): Registry {
 	const file = join(configDir, 'registry.md');
 
-	return existsSync(file) ? parseRegistry(readFileSync(file, 'utf8')) : emptyRegistry(contractHome(defaultHome()));
+	return existsSync(file) ? parseRegistry(readFileSync(file, 'utf8')) : emptyRegistry(contractHome(fallbackHome));
 }
 
 export function writeRegistryFile(configDir: string, registry: Registry): void {
 	mkdirSync(configDir, { recursive: true });
 	writeFileSync(join(configDir, 'registry.md'), renderRegistry(registry));
-}
-
-export function defaultHome(): string {
-	return join(homedir(), 'keepwiki');
 }
 
 export function expandHome(path: string): string {
@@ -101,7 +104,7 @@ export function contractHome(path: string): string {
 }
 
 function registered(spec: VaultSpec, path: string, options: VaultOptions): Registry {
-	const current = readRegistryFile(options.configDir);
+	const current = readRegistryFile(options.configDir, options.home);
 	const registry = current.vaults.length === 0 ? emptyRegistry(contractHome(options.home)) : current;
 
 	return addVault(registry, {
@@ -163,7 +166,7 @@ function vaultClaudeMd(spec: VaultSpec): string {
 
 function indexMd(name: string, unprocessed: readonly string[]): string {
 	const unprocessedSection =
-		unprocessed.length === 0 ? [] : ['## Unprocessed notes', '', ...unprocessed.map((file) => `- ${file}`), ''];
+		unprocessed.length === 0 ? [] : [indexSections.unprocessed, '', ...unprocessed.map((file) => `- ${file}`), ''];
 
 	return [
 		'---',
@@ -174,9 +177,9 @@ function indexMd(name: string, unprocessed: readonly string[]): string {
 		'',
 		'One line per page: `- [[page]] — what it holds`.',
 		'',
-		'## Pages',
+		indexSections.pages,
 		'',
-		'## Pending updates',
+		indexSections.pending,
 		'',
 		...unprocessedSection,
 	].join('\n');
@@ -199,20 +202,11 @@ function evalMd(name: string): string {
 }
 
 function initialiseGit(path: string): GitOutcome {
-	try {
-		execFileSync('git', ['--version'], { stdio: 'ignore' });
-	} catch {
+	if (!hasGit()) {
 		return 'unavailable';
 	}
 
 	execFileSync('git', ['init', '-q'], { cwd: path, stdio: 'ignore' });
 
-	try {
-		execFileSync('git', ['add', '-A'], { cwd: path, stdio: 'ignore' });
-		execFileSync('git', ['commit', '-q', '-m', 'chore: create the vault'], { cwd: path, stdio: 'ignore' });
-
-		return 'initialised';
-	} catch {
-		return 'initialised-without-commit';
-	}
+	return commitAll(path, 'chore: create the vault') === 'committed' ? 'initialised' : 'initialised-without-commit';
 }

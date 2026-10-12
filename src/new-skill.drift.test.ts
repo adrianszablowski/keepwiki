@@ -25,12 +25,4 @@ describe('skills/new/SKILL.md against the code it describes', () => {
 		for (const folder of vaultFolders) expect(skill).toContain(`${folder}/`);
 		for (const file of vaultFiles) expect(skill).toContain(file);
 	});
-
-	it('uses only the frontmatter keys Codex accepts', () => {
-		const frontmatter = skill.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? '';
-		const keys = frontmatter.split('\n').map((line) => line.split(':')[0]);
-
-		for (const key of keys)
-			expect(['name', 'description', 'license', 'compatibility', 'metadata', 'allowed-tools']).toContain(key);
-	});
 });

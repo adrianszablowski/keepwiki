@@ -25,7 +25,7 @@ describe('creating a vault', () => {
 				.sort(),
 		).toEqual(['CLAUDE.md', 'eval.md', 'inbox', 'index.md', 'knowledge', 'raw']);
 		expect(existsSync(join(home, 'inbox'))).toBe(true);
-		expect(readRegistryFile(configDir).vaults.map((vault) => vault.name)).toEqual(['megadev']);
+		expect(readRegistryFile(configDir, home).vaults.map((vault) => vault.name)).toEqual(['megadev']);
 	});
 
 	it('writes the vault fields and the schema version into the vault CLAUDE.md frontmatter', () => {
