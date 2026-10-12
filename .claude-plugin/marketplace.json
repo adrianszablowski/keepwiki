@@ -1,0 +1,14 @@
+{
+	"name": "keepwiki",
+	"description": "keepwiki: a second brain for Claude Code and Codex.",
+	"owner": {
+		"name": "Adrian Szabłowski"
+	},
+	"plugins": [
+		{
+			"name": "keepwiki",
+			"source": "./",
+			"description": "Sources become a linked markdown wiki that answers only from what it holds."
+		}
+	]
+}

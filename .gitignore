@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Tests
+coverage/
+.vitest/
+
+# Environment
+.env
+.env.*
+!.env.template
+
+# Local agent configuration
+.claude/
+.superpowers/
+.codex/
+.agents/worktrees/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# macOS
+.DS_Store
+.AppleDouble
+._*
+
+# Private notes
+docs/

@@ -1,0 +1,51 @@
+{
+	"name": "keepwiki",
+	"version": "0.0.1",
+	"description": "A second brain for Claude Code and Codex: sources become a linked markdown wiki that answers only from what it holds.",
+	"license": "MIT",
+	"author": "Adrian Szabłowski",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/adrianszablowski/keepwiki.git"
+	},
+	"homepage": "https://github.com/adrianszablowski/keepwiki",
+	"keywords": [
+		"claude-code",
+		"codex",
+		"agent-skills",
+		"second-brain",
+		"wiki",
+		"markdown",
+		"knowledge-base"
+	],
+	"type": "module",
+	"bin": {
+		"keepwiki": "dist/bin.js"
+	},
+	"files": [
+		"dist"
+	],
+	"engines": {
+		"node": ">=22"
+	},
+	"packageManager": "pnpm@10.33.0",
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"type-check": "tsc --noEmit",
+		"lint": "eslint .",
+		"test": "vitest run",
+		"verify": "pnpm type-check && pnpm lint && pnpm test",
+		"prepublishOnly": "pnpm verify && pnpm build"
+	},
+	"devDependencies": {
+		"@stylistic/eslint-plugin": "^5.10.0",
+		"@types/node": "^26.6.5",
+		"eslint": "^10.12.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.6",
+		"prettier": "^3.9.10",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.71.2",
+		"vitest": "^5.0.4"
+	}
+}
