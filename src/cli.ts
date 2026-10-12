@@ -4,6 +4,7 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { fetchArticle } from './article.js';
+import { verifyCitations } from './citations.js';
 import { addToInbox, completeNote, listInbox, sourceKinds, type InboxOptions, type SourceKind } from './inbox.js';
 import { renderRegistry } from './registry.js';
 import { adoptVault, createVault, expandHome, readRegistryFile, type VaultOptions, type VaultSpec } from './vault.js';
@@ -28,6 +29,7 @@ Commands:
                                       content comes from --file (- is stdin), from --url for an article, else stdin
   inbox list                          print every unprocessed source as JSON
   inbox done   <path> [--vault <n>]   move a learned source to raw/ (--vault for a shared inbox note)
+  verify-citations [--file <p>]       check every "excerpt" [source: vault/knowledge/page.md] in an answer (stdin or --file)
   --version                           print the version
 
 The registry lives in ~/.keepwiki/registry.md.
@@ -84,6 +86,10 @@ export async function run(argv: readonly string[], io: CommandLineIo, env: Envir
 
 		if (command === 'inbox' && subcommand === 'done') {
 			return inboxDone(rest, io, env);
+		}
+
+		if (command === 'verify-citations') {
+			return verifyCitationsCommand(argv.slice(1), io, env);
 		}
 	} catch (error) {
 		io.error(`${(error as Error).message}\n`);
@@ -196,6 +202,15 @@ function inboxDone(args: readonly string[], io: CommandLineIo, env: Environment)
 	io.write(`${JSON.stringify(result, null, '\t')}\n`);
 
 	return 0;
+}
+
+function verifyCitationsCommand(args: readonly string[], io: CommandLineIo, env: Environment): number {
+	const { values } = parseArgs({ args: [...args], options: { file: { type: 'string' } }, strict: true });
+	const report = verifyCitations(readContent(values.file, io), inboxOptions(env));
+
+	io.write(`${JSON.stringify(report, null, '\t')}\n`);
+
+	return report.isGrounded ? 0 : 1;
 }
 
 function readContent(file: string | undefined, io: CommandLineIo): string {

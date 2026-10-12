@@ -11,7 +11,8 @@ here; that is `/keepwiki:learn`.
 
 ## 1. Pick the inbox
 
-`@name` in the request names the vault. Confirm it exists:
+`@name` in the request names the vault; `in:name` means the same and avoids the file picker when a
+folder of that name sits in the working directory. Confirm it exists:
 
 ```bash
 npx -y keepwiki registry list

@@ -281,3 +281,61 @@ describe('the inbox commands', () => {
 		expect(JSON.parse(captured.out.join(''))).toEqual([]);
 	});
 });
+
+describe('the citation gate command', () => {
+	async function vaultWithPage(): Promise<{ readonly env: Readonly<Record<string, string>>; readonly root: string }> {
+		const root = mkdtempSync(join(tmpdir(), 'keepwiki-cli-gate-'));
+		const env = { HOME: root };
+		const home = join(root, 'home');
+
+		await run(
+			['vault', 'create', '--name', 'seo', '--description', 'SEO', '--language', 'en', '--home', home],
+			capture().io,
+			env,
+		);
+		writeFileSync(
+			join(home, 'vaults', 'seo', 'knowledge', 'canonical.md'),
+			'# Canonical\n\nA canonical tag names the main URL.\n',
+		);
+
+		return { env, root };
+	}
+
+	it('exits 0 and prints the verified citations when every citation holds', async () => {
+		const { env } = await vaultWithPage();
+		const captured = capture('"A canonical tag names the main URL." [source: seo/knowledge/canonical.md]\n');
+		const exitCode = await run(['verify-citations'], captured.io, env);
+		const report = JSON.parse(captured.out.join('')) as { verified: unknown[]; failed: unknown[] };
+
+		expect(exitCode).toBe(0);
+		expect(report.verified).toHaveLength(1);
+		expect(report.failed).toEqual([]);
+	});
+
+	it('exits 1 and names the reason when a citation fails', async () => {
+		const { env } = await vaultWithPage();
+		const captured = capture('"Canonical tags are always optional." [source: seo/knowledge/canonical.md]\n');
+		const exitCode = await run(['verify-citations'], captured.io, env);
+		const report = JSON.parse(captured.out.join('')) as { failed: { reason: string }[] };
+
+		expect(exitCode).toBe(1);
+		expect(report.failed[0]?.reason).toBe('excerpt not found');
+	});
+
+	it('exits 1 when the answer cites nothing', async () => {
+		const { env } = await vaultWithPage();
+		const captured = capture('Canonical tags matter.\n');
+
+		expect(await run(['verify-citations'], captured.io, env)).toBe(1);
+	});
+
+	it('reads the answer from --file', async () => {
+		const { env, root } = await vaultWithPage();
+		const file = join(root, 'answer.md');
+		const captured = capture();
+
+		writeFileSync(file, '"A canonical tag names the main URL." [source: seo/knowledge/canonical.md]\n');
+
+		expect(await run(['verify-citations', '--file', file], captured.io, env)).toBe(0);
+	});
+});

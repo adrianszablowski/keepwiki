@@ -33,6 +33,8 @@ export const vaultFolders = ['inbox', 'raw', 'knowledge'] as const;
 
 export const vaultFiles = ['CLAUDE.md', 'index.md', 'eval.md'] as const;
 
+export const evalHeader = '| question | expected |';
+
 export const indexSections = {
 	pages: '## Pages',
 	pending: '## Pending updates',
@@ -195,7 +197,7 @@ function evalMd(name: string): string {
 		'',
 		'One row per question. `expected` is a page name, or `none` for a question the vault must answer with "not in keepwiki".',
 		'',
-		'| question | expected |',
+		evalHeader,
 		'| --- | --- |',
 		'',
 	].join('\n');

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { registryHeader, vaultNamePattern } from './registry.js';
-import { schemaVersion, vaultFiles, vaultFolders } from './vault.js';
+import { evalHeader, schemaVersion, vaultFiles, vaultFolders } from './vault.js';
 
 const skill = readFileSync(new URL('../skills/new/SKILL.md', import.meta.url), 'utf8');
 
@@ -19,6 +19,10 @@ describe('skills/new/SKILL.md against the code it describes', () => {
 
 	it('quotes the schema version the vault CLAUDE.md carries', () => {
 		expect(skill).toContain(`keepwiki_schema: ${schemaVersion}`);
+	});
+
+	it('quotes the eval table header', () => {
+		expect(skill).toContain(evalHeader);
 	});
 
 	it('names every folder and file the CLI creates', () => {
