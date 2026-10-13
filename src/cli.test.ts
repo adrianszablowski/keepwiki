@@ -280,6 +280,47 @@ describe('the inbox commands', () => {
 		expect(await run(['inbox', 'list'], captured.io, env)).toBe(0);
 		expect(JSON.parse(captured.out.join(''))).toEqual([]);
 	});
+
+	it('reminds in one line how many sources wait and which skill learns them', async () => {
+		const { env } = await vaultSandbox();
+
+		await run(['inbox', 'add', '--vault', 'seo', '--source', 'text', '--title', 'One'], capture('a\n').io, env);
+		await run(['inbox', 'add', '--source', 'text', '--title', 'Two'], capture('b\n').io, env);
+
+		const captured = capture();
+
+		expect(await run(['inbox', 'remind'], captured.io, env)).toBe(0);
+		expect(captured.out.join('')).toBe('keepwiki: 2 unprocessed sources; `/keepwiki:learn` adds them to the pages\n');
+	});
+
+	it('says source, not sources, for a single waiting note', async () => {
+		const { env } = await vaultSandbox();
+
+		await run(['inbox', 'add', '--source', 'text', '--title', 'Only'], capture('a\n').io, env);
+
+		const captured = capture();
+
+		await run(['inbox', 'remind'], captured.io, env);
+
+		expect(captured.out.join('')).toContain('1 unprocessed source;');
+	});
+
+	it('stays silent when nothing is unprocessed, so a session start hook adds no context', async () => {
+		const { env } = await vaultSandbox();
+		const captured = capture();
+
+		expect(await run(['inbox', 'remind'], captured.io, env)).toBe(0);
+		expect(captured.out.join('')).toBe('');
+	});
+
+	it('stays silent before any vault or inbox exists', async () => {
+		const captured = capture();
+
+		expect(
+			await run(['inbox', 'remind'], captured.io, { HOME: mkdtempSync(join(tmpdir(), 'keepwiki-cli-empty-')) }),
+		).toBe(0);
+		expect(captured.out.join('')).toBe('');
+	});
 });
 
 describe('the citation gate command', () => {

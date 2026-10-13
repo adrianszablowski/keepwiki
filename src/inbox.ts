@@ -67,6 +67,10 @@ export function addToInbox(spec: InboxSpec, options: InboxOptions): AddResult {
 	return { path, vault: vault?.name ?? null, outcome: 'created' };
 }
 
+export function reminder(count: number): string {
+	return `${count} unprocessed ${count === 1 ? 'source' : 'sources'}; \`/keepwiki:learn\` adds them to the pages`;
+}
+
 export function listInbox(options: InboxOptions): readonly InboxNote[] {
 	const registry = readRegistryFile(options.configDir, options.home);
 	const shared = unprocessedNotes(expandHome(registry.inbox)).map((note) => toInboxNote(note, null));

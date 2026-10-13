@@ -27,8 +27,23 @@ vault in the registry: use it.
 
 For each chosen vault, read `index.md` and pick every page whose line could bear on the question.
 Then grep `knowledge/` for the question's key terms, in the vault's language and the question's, and
-add the hits: the index is a map, grep is the second net. Read every candidate page in full.
-Follow `[[page]]` and `[[vault:page]]` links that look relevant, one hop.
+add the hits: the index is a map, grep is the second net. When `qmd` is on PATH, a third net ranks
+the pages by meaning:
+
+```bash
+qmd query "<the question>" -c <vault> --json -n 10
+```
+
+Each hit's `file` names a page under `knowledge/`; add the ones not yet on the list. A vault with no
+collection yet (`qmd collection list` lacks its name) gets one before the query, named after the vault,
+and its embeddings:
+
+```bash
+qmd collection add <vault path>/knowledge --name <vault> && qmd embed
+```
+
+Read every candidate page in full. Follow `[[page]]` and `[[vault:page]]` links that look relevant,
+one hop.
 
 ## 3. Write the answer
 
@@ -43,7 +58,7 @@ not a phrase, and one with no quotation marks inside it, because the first closi
 excerpt. Straight `"…"`, low-high `„…”` and curly `“…”` quotes all count. End with two short
 sections:
 
-- `Searched`: the vaults and the pages read
+- `Searched`: the vaults and the pages read, and `qmd` when it ranked them
 - `Not in keepwiki`: the parts of the question the pages leave open
 
 When the user asked for the model's own view as well, add `## Outside keepwiki` after those, with no

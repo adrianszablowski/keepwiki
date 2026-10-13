@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { inboxFields, inboxStatuses, sourceKinds } from './inbox.js';
+import { inboxFields, inboxStatuses, reminder, sourceKinds } from './inbox.js';
 import { indexSections } from './vault.js';
 import { transcriptMissingOutcome } from './youtube.js';
 
 const add = readFileSync(new URL('../skills/add/SKILL.md', import.meta.url), 'utf8');
 const learn = readFileSync(new URL('../skills/learn/SKILL.md', import.meta.url), 'utf8');
+const ask = readFileSync(new URL('../skills/ask/SKILL.md', import.meta.url), 'utf8');
+const reminderWithCount = reminder(2).replace('2', 'N');
 
 describe('skills/add/SKILL.md against the inbox code', () => {
 	it('offers exactly the source kinds the CLI accepts', () => {
@@ -41,5 +43,11 @@ describe('skills/learn/SKILL.md against the inbox and index code', () => {
 
 	it('describes the cross-vault link syntax', () => {
 		expect(learn).toContain('[[vault:page]]');
+	});
+});
+
+describe('the reminder sentence the hook prints', () => {
+	it('is the sentence ask tells the user', () => {
+		expect(ask).toContain(reminderWithCount);
 	});
 });

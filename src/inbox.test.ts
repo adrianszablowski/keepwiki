@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFil
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { addToInbox, completeNote, listInbox } from './inbox.js';
+import { addToInbox, completeNote, listInbox, reminder } from './inbox.js';
 import { adoptVault, createVault } from './vault.js';
 
 interface Sandbox {
@@ -263,5 +263,15 @@ describe('deduplicating YouTube links', () => {
 		);
 
 		expect(second).toEqual({ path: first.path, vault: 'seo', outcome: 'appended' });
+	});
+});
+
+describe('the reminder about unprocessed sources', () => {
+	it('counts the sources and names the skill that learns them', () => {
+		expect(reminder(3)).toBe('3 unprocessed sources; `/keepwiki:learn` adds them to the pages');
+	});
+
+	it('uses the singular for one source', () => {
+		expect(reminder(1)).toBe('1 unprocessed source; `/keepwiki:learn` adds them to the pages');
 	});
 });

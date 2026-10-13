@@ -84,6 +84,13 @@ The note moves to `raw/` with `status: processed`, and the vault is committed (`
 (`source: adopted` in `inbox list`) stays where it is; `inbox done` only drops it from
 `## Unprocessed notes`, and `sources:` lists its own path relative to the vault.
 
+When `qmd` is on PATH, refresh its index and embeddings once the pages are written, so `ask` finds
+them:
+
+```bash
+qmd update && qmd embed
+```
+
 ## 7. Report
 
 Per source: the vault, pages written and updated, pending updates left, the git outcome. Done when

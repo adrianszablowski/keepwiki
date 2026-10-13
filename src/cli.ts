@@ -7,7 +7,15 @@ import { fetchArticle } from './article.js';
 import { checkVault } from './check.js';
 import { verifyCitations } from './citations.js';
 import { fetchVideo, transcriptMissingOutcome, videoNoteBody } from './youtube.js';
-import { addToInbox, completeNote, listInbox, sourceKinds, type InboxOptions, type SourceKind } from './inbox.js';
+import {
+	addToInbox,
+	completeNote,
+	listInbox,
+	reminder,
+	sourceKinds,
+	type InboxOptions,
+	type SourceKind,
+} from './inbox.js';
 import { renderRegistry } from './registry.js';
 import { adoptVault, createVault, expandHome, readRegistryFile, type VaultOptions, type VaultSpec } from './vault.js';
 
@@ -30,6 +38,7 @@ Commands:
   inbox add    --source <${sourceKinds.join('|')}> [--vault <n>] [--title <t>] [--url <u>] [--file <p>]
                                       content comes from --file (- is stdin), from --url for an article, else stdin
   inbox list                          print every unprocessed source as JSON
+  inbox remind                        one line when sources wait, nothing when none (for a session start hook)
   inbox done   <path> [--vault <n>]   move a learned source to raw/ (--vault for a shared inbox note)
   verify-citations [--file <p>]       check every "excerpt" [source: vault/knowledge/page.md] in an answer (stdin or --file)
   check --vault <n>                   report broken links, missing sources, orphans and stale entries as JSON
@@ -85,6 +94,10 @@ export async function run(argv: readonly string[], io: CommandLineIo, env: Envir
 
 		if (command === 'inbox' && subcommand === 'list') {
 			return inboxList(io, env);
+		}
+
+		if (command === 'inbox' && subcommand === 'remind') {
+			return inboxRemind(io, env);
 		}
 
 		if (command === 'inbox' && subcommand === 'done') {
@@ -225,6 +238,16 @@ function vaultLanguage(vault: string | undefined, env: Environment): string {
 
 function inboxList(io: CommandLineIo, env: Environment): number {
 	io.write(`${JSON.stringify(listInbox(inboxOptions(env)), null, '\t')}\n`);
+
+	return 0;
+}
+
+function inboxRemind(io: CommandLineIo, env: Environment): number {
+	const count = listInbox(inboxOptions(env)).length;
+
+	if (count > 0) {
+		io.write(`keepwiki: ${reminder(count)}\n`);
+	}
 
 	return 0;
 }

@@ -1,0 +1,17 @@
+{
+	"description": "Reminds the model at session start how many keepwiki sources wait to be learned.",
+	"hooks": {
+		"SessionStart": [
+			{
+				"matcher": "startup|resume|clear",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "command -v npx >/dev/null 2>&1 && npx -y keepwiki inbox remind 2>/dev/null || true",
+						"timeout": 20
+					}
+				]
+			}
+		]
+	}
+}
