@@ -196,7 +196,7 @@ describe('completing a source after learn', () => {
 		expect(raw).toContain('status: processed');
 		expect(raw).toContain(`processed: ${today}`);
 		expect(raw).toContain('body');
-		expect(['committed', 'uncommitted', 'unavailable']).toContain(result.git);
+		expect(result).toEqual({ path: result.path, vault: 'seo' });
 	});
 
 	it('moves a shared inbox note into the raw folder of the vault named', () => {

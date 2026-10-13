@@ -19,11 +19,7 @@ describe('creating a vault', () => {
 		const result = createVault(megadev, { configDir, home });
 
 		expect(result.path).toBe(join(home, 'vaults', 'megadev'));
-		expect(
-			readdirSync(result.path)
-				.filter((entry) => entry !== '.git')
-				.sort(),
-		).toEqual(['CLAUDE.md', 'eval.md', 'inbox', 'index.md', 'knowledge', 'raw']);
+		expect(readdirSync(result.path).sort()).toEqual(['CLAUDE.md', 'eval.md', 'inbox', 'index.md', 'knowledge', 'raw']);
 		expect(existsSync(join(home, 'inbox'))).toBe(true);
 		expect(readRegistryFile(configDir, home).vaults.map((vault) => vault.name)).toEqual(['megadev']);
 	});
@@ -66,13 +62,12 @@ describe('creating a vault', () => {
 		expect(existsSync(join(home, 'other'))).toBe(false);
 	});
 
-	it('reports whether git initialised the vault', () => {
+	it('creates no git repository and reports only the name, path and unprocessed notes', () => {
 		const { configDir, home } = sandbox();
 		const result = createVault(megadev, { configDir, home });
 
-		expect(['initialised', 'initialised-without-commit', 'unavailable']).toContain(result.git);
-
-		if (result.git !== 'unavailable') expect(existsSync(join(result.path, '.git'))).toBe(true);
+		expect(result).toEqual({ name: 'megadev', path: result.path, unprocessed: [] });
+		expect(existsSync(join(result.path, '.git'))).toBe(false);
 	});
 });
 

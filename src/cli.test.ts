@@ -69,7 +69,7 @@ describe('the vault and registry commands', () => {
 			captured.io,
 			env,
 		);
-		const summary = JSON.parse(captured.out.join('')) as { name: string; path: string; git: string };
+		const summary = JSON.parse(captured.out.join('')) as { name: string; path: string };
 
 		expect(exitCode).toBe(0);
 		expect(summary.name).toBe('megadev');
@@ -266,7 +266,7 @@ describe('the inbox commands', () => {
 
 		const done = capture();
 		const exitCode = await run(['inbox', 'done', notes[0]?.path ?? ''], done.io, env);
-		const summary = JSON.parse(done.out.join('')) as { path: string; git: string };
+		const summary = JSON.parse(done.out.join('')) as { path: string };
 
 		expect(exitCode).toBe(0);
 		expect(summary.path.startsWith(join(home, 'vaults', 'seo', 'raw'))).toBe(true);

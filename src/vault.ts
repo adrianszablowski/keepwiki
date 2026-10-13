@@ -1,8 +1,6 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
-import { commitAll, hasGit } from './git.js';
 import { addVault, emptyRegistry, parseRegistry, renderRegistry, type Registry } from './registry.js';
 
 export interface VaultSpec {
@@ -18,12 +16,9 @@ export interface VaultOptions {
 	readonly home: string;
 }
 
-export type GitOutcome = 'initialised' | 'initialised-without-commit' | 'unavailable';
-
 export interface VaultResult {
 	readonly name: string;
 	readonly path: string;
-	readonly git: GitOutcome;
 	readonly unprocessed: readonly string[];
 }
 
@@ -55,7 +50,7 @@ export function createVault(spec: VaultSpec, options: VaultOptions): VaultResult
 	scaffold(spec, path, []);
 	writeRegistryFile(options.configDir, registry);
 
-	return { name: spec.name, path, git: initialiseGit(path), unprocessed: [] };
+	return { name: spec.name, path, unprocessed: [] };
 }
 
 export function adoptVault(spec: VaultSpec & { readonly path: string }, options: VaultOptions): VaultResult {
@@ -81,7 +76,7 @@ export function adoptVault(spec: VaultSpec & { readonly path: string }, options:
 	scaffold(spec, spec.path, unprocessed);
 	writeRegistryFile(options.configDir, registry);
 
-	return { name: spec.name, path: spec.path, git: initialiseGit(spec.path), unprocessed };
+	return { name: spec.name, path: spec.path, unprocessed };
 }
 
 export function readRegistryFile(configDir: string, fallbackHome: string): Registry {
@@ -201,14 +196,4 @@ function evalMd(name: string): string {
 		'| --- | --- |',
 		'',
 	].join('\n');
-}
-
-function initialiseGit(path: string): GitOutcome {
-	if (!hasGit()) {
-		return 'unavailable';
-	}
-
-	execFileSync('git', ['init', '-q'], { cwd: path, stdio: 'ignore' });
-
-	return commitAll(path, 'chore: create the vault') === 'committed' ? 'initialised' : 'initialised-without-commit';
 }

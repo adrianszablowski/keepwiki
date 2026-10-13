@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { parseFrontmatter, renderFrontmatter, setFrontmatterField } from './frontmatter.js';
-import { commitAll, type CommitOutcome } from './git.js';
 import type { Registry, RegistryEntry } from './registry.js';
 import { sectionItems } from './sections.js';
 import { expandHome, indexSections, readRegistryFile } from './vault.js';
@@ -46,7 +45,6 @@ export interface InboxNote {
 export interface CompleteResult {
 	readonly path: string;
 	readonly vault: string;
-	readonly git: CommitOutcome;
 }
 
 export function addToInbox(spec: InboxSpec, options: InboxOptions): AddResult {
@@ -137,9 +135,7 @@ function moveToRaw(path: string, vault: RegistryEntry): CompleteResult {
 	writeFileSync(destination, processed);
 	rmSync(path);
 
-	const title = parseFrontmatter(text).get('title') ?? basename(path, '.md');
-
-	return { path: destination, vault: vault.name, git: commitAll(vaultPath(vault), `learn: ${title}`) };
+	return { path: destination, vault: vault.name };
 }
 
 function forgetAdoptedNote(path: string, vault: RegistryEntry): CompleteResult {
@@ -155,7 +151,7 @@ function forgetAdoptedNote(path: string, vault: RegistryEntry): CompleteResult {
 
 	writeFileSync(indexPath, `${index.join('\n').trimEnd()}\n`);
 
-	return { path, vault: vault.name, git: commitAll(vaultPath(vault), `learn: ${basename(path)}`) };
+	return { path, vault: vault.name };
 }
 
 function noteWithUrl(

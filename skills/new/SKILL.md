@@ -42,17 +42,15 @@ npx -y keepwiki vault create --name <name> --description "<one line>" --language
 npx -y keepwiki vault adopt  --name <name> --description "<one line>" --language <code> --boundary "<answer 2>" --path <folder>
 ```
 
-Add `--path <folder>` to `create` for a location outside the home. The command prints JSON: `path`,
-`git` (`initialised`, `initialised-without-commit`, or `unavailable`) and `unprocessed` (the adopted
-notes). A non-zero exit prints the reason: a taken name, a folder that already is a vault, a `|` in a
-description. Fix the input and run it again.
+Add `--path <folder>` to `create` for a location outside the home. The command prints JSON: `path`
+and `unprocessed` (the adopted notes). A non-zero exit prints the reason: a taken name, a folder that
+already is a vault, a `|` in a description. Fix the input and run it again.
 
 ## 4. Report
 
 Tell the user, in their language:
 
 - the vault's path and that it is in the registry
-- what `git` said: with `unavailable`, there is no undo for what `learn` writes later
 - for an adopted folder, how many notes wait as unprocessed
 - that `eval.md` holds the format and no questions yet; the first `learn` adds them, because a
   question with an expected page needs pages to exist

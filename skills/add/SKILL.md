@@ -1,6 +1,6 @@
 ---
 name: add
-description: Put a source into a keepwiki inbox: pasted text, a link to an article, a PDF, a .md or .txt file. Use when the user shares something to keep, says "add", or names a vault with @name.
+description: Put a source into a keepwiki inbox: pasted text, a link to an article or a YouTube video, a PDF, a .md or .txt file. Use when the user shares something to keep, says "add", or names a vault with @name.
 ---
 
 # add: a source into an inbox

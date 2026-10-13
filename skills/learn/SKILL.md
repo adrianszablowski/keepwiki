@@ -78,9 +78,8 @@ npx -y keepwiki inbox done <path>                 # a vault inbox note
 npx -y keepwiki inbox done <path> --vault <name>  # a shared inbox note
 ```
 
-The note moves to `raw/` with `status: processed`, and the vault is committed (`git` in the JSON:
-`committed`, `uncommitted` means git has no `user.name` yet, `unavailable` means no undo). The JSON
-`path` is the raw file; if it differs from what `sources:` says, fix the frontmatter. An adopted note
+The note moves to `raw/` with `status: processed`. The JSON `path` is the raw file; if it differs
+from what `sources:` says, fix the frontmatter. An adopted note
 (`source: adopted` in `inbox list`) stays where it is; `inbox done` only drops it from
 `## Unprocessed notes`, and `sources:` lists its own path relative to the vault.
 
@@ -93,7 +92,7 @@ qmd update && qmd embed
 
 ## 7. Report
 
-Per source: the vault, pages written and updated, pending updates left, the git outcome. Done when
+Per source: the vault, pages written and updated, pending updates left. Done when
 `inbox list` is empty, or every remaining note has a reason the user heard (no vault fits, user
 declined).
 
@@ -103,5 +102,4 @@ Do the file moves yourself and say that you did:
 
 - unprocessed sources are the `.md` files with `status: unprocessed` in the shared inbox (`inbox:` in
   `~/.keepwiki/registry.md`) and in every vault's `inbox/`, plus `## Unprocessed notes` in each `index.md`
-- closing a note: move it to the vault's `raw/`, set `status: processed`, add `processed: <date>`,
-  then `git add -A && git commit -m "learn: <title>"` in the vault when it has `.git`
+- closing a note: move it to the vault's `raw/`, set `status: processed`, add `processed: <date>`
