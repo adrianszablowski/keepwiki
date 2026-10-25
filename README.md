@@ -4,8 +4,8 @@ A second brain for Claude Code and Codex. You feed it sources: notes, articles, 
 PDFs. It compiles them into a linked markdown wiki, one vault per subject you choose, and answers
 your questions only from what the wiki holds. When the answer is not there, it says so.
 
-Status: the seven skills, the citation gate and the session start hook are built. The npm package is
-not yet published, so the skills do not run on another machine until it is.
+Status: early release. The seven skills, the citation gate and the session start hook are built, and
+the `keepwiki` package is on npm.
 
 ## How it works
 
